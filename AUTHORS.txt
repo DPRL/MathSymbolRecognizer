@@ -1,0 +1,17 @@
+DPRL Math Symbol Recognizers
+Copyright (c) 2014 Kenny Davila, Richard Zanibbi
+
+This collection of classifiers for isolated handwritten math symbols was
+created by Kenny Davila on-and-off over a year-and-a-half.  The code was
+first created for a project for Dr. Zanibbi's Pattern Recognition course in
+Fall 2012, was then used for the RIT entry in the CROHME 2013 handwritten math
+recognition competition, and was then later extended and revised under Dr.
+Zanibbi's supervision.
+
+The system was developed at the Rochester Institute of Technology in
+Rochester, New York, USA, primarily in the Document and Pattern Recognition
+Lab (DPRL) located within the Computer Science Department.
+
+Please see the LICENSE.txt file for terms of use (the system is being
+distributed under the GNU General Public License version 3).
+
