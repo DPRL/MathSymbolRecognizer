@@ -196,7 +196,6 @@ def extract_junk_symbol(traces_objects, junk_class_name):
         return None
 
     #now normalize size and locations for traces in current symbol
-    print new_symbol.original_box
     new_symbol.normalize()
 
     return new_symbol
