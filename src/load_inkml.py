@@ -1,26 +1,3 @@
-"""
-    DPRL Math Symbol Recognizers 
-    Copyright (c) 2012-2014 Kenny Davila, Richard Zanibbi
-
-    This file is part of DPRL Math Symbol Recognizers.
-
-    DPRL Math Symbol Recognizers is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    DPRL Math Symbol Recognizers is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with DPRL Math Symbol Recognizers.  If not, see <http://www.gnu.org/licenses/>.
-
-    Contact:
-        - Kenny Davila: kxd7282@rit.edu
-        - Richard Zanibbi: rlaz@cs.rit.edu 
-"""
 from traceInfo import *
 from mathSymbol import *
 import xml.etree.ElementTree as ET
@@ -35,10 +12,13 @@ import xml.etree.ElementTree as ET
 #      - Kenny Davila (Oct 24, 2013)
 #      - Kenny Davila (Nov 25, 2013)
 #         - Added ID to symbol
-#      - Kenny Davila (Jan 17, 2012-2014)
+#      - Kenny Davila (Jan 17, 2014)
 #         - Fixed ID cases for CHROME 2013 data containing colon
-#      - Kenny Davila (Feb 3, 2012-2014)
+#      - Kenny Davila (Feb 3, 2014)
 #         - Fixed cases where symbol loaded has no traces
+#      - Kenny Davila (Apr 11, 2014)
+#         - Fixed cases where symbol loaded has no traces
+#         - Added junk symbol compatibility
 #
 #=====================================================================
 
@@ -182,20 +162,49 @@ def extract_symbols( root, traces_objects, truth_available ):
                 
         symbols.append(new_symbol)
 
-    avg_width /= len(trace_groups)
-    avg_height /= len(trace_groups)
-
-    for s in symbols:
-        s.setSizeRatio(avg_width, avg_height)
+    if len(trace_groups) > 0:
+        avg_width /= len(trace_groups)
+        avg_height /= len(trace_groups)
+    
+        for s in symbols:
+            s.setSizeRatio(avg_width, avg_height)
         
     return symbols
 
 def load_inkml(file_name, truth_available):
     
-    root, traces_objects = load_inkml_traces(file_name )
+    root, traces_objects = load_inkml_traces(file_name)
     
-    symbols = extract_symbols( root, traces_objects, truth_available )
+    symbols = extract_symbols(root, traces_objects, truth_available)
     
     return symbols
 
+def extract_junk_symbol(traces_objects, junk_class_name):
+    symbol_id = 0
+    symbol_class = junk_class_name
 
+    symbol_list = []
+    for trace_id in traces_objects:
+        symbol_list.append(traces_objects[trace_id])
+
+    #create the math symbol...
+    try:
+        new_symbol = MathSymbol(symbol_id, symbol_list, symbol_class)
+    except Exception as e:
+        print("Failed to load symbol!!")
+        print(e)
+        return None
+
+    #now normalize size and locations for traces in current symbol
+    print new_symbol.original_box
+    new_symbol.normalize()
+
+    return new_symbol
+
+def load_junk_inkml(file_name, junk_class_name):
+
+    root, traces_objects = load_inkml_traces(file_name)
+
+    symbols = [extract_junk_symbol(traces_objects, junk_class_name)]
+
+    return symbols

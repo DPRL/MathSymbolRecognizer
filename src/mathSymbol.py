@@ -1,26 +1,3 @@
-"""
-    DPRL Math Symbol Recognizers 
-    Copyright (c) 2012-2014 Kenny Davila, Richard Zanibbi
-
-    This file is part of DPRL Math Symbol Recognizers.
-
-    DPRL Math Symbol Recognizers is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    DPRL Math Symbol Recognizers is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with DPRL Math Symbol Recognizers.  If not, see <http://www.gnu.org/licenses/>.
-
-    Contact:
-        - Kenny Davila: kxd7282@rit.edu
-        - Richard Zanibbi: rlaz@cs.rit.edu 
-"""
 import math
 from traceInfo import *
 
@@ -37,22 +14,24 @@ from traceInfo import *
 #      - Kenny Davila (Oct 19, 2013)
 #      - Kenny Davila (Nov 25, 2013)
 #         - Added ID to symbol
-#      - Kenny Davila (Jan 14, 2012-2014)
+#      - Kenny Davila (Jan 14, 2014)
 #        - Added function to return symbol squared bounding box
 #        - Added function to swap between original and processed points
 #        - saveAsSVG function now uses current bounding box as view box
-#      - Kenny Davila (Jan 15, 2012-2014)
+#      - Kenny Davila (Jan 15, 2014)
 #        - Aspect Ratio is now normalized
 #        - Orientation Hist. accept now non-squared grids
 #        - Grid of distances now computes the average distance instead of min
 #        - Added function for computing average distance between point and
 #          all points of the traces
-#      - Kenny Davila (Jan 16, 2012-2014)
+#      - Kenny Davila (Jan 16, 2014)
 #        - 2D histogram now acepts multiple non-squared grids
-#      - Kenny Davila (Jan 21, 2012-2014)
+#      - Kenny Davila (Jan 21, 2014)
 #        - Corrected multiple continuous features added as vectors
-#      - Kenny Davila (Feb 3, 2012-2014)
+#      - Kenny Davila (Feb 3, 2014)
 #        - Error handling for empty symbols, now raises an especial error
+#      - Kenny Davila (Apr 11, 2014)
+#        - Corrected bug on aspect ratio
 #
 #=====================================================================
 
@@ -675,7 +654,7 @@ class MathSymbol:
             if w <= 0.01:
                 w = 0.01
             if h <= 0.01:
-                h = 0.1
+                h = 0.01
 
             #raw aspect ratio...
             #features.append( [ (w / h) ] ) #add as a 1-D vector
