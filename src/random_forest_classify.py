@@ -28,6 +28,7 @@ import math
 from sklearn.ensemble import RandomForestClassifier
 from dataset_ops import *
 from evaluation_ops import *
+from symbol_classifier import SymbolClassifier
 
 #=====================================================================
 #  this program takes as input a data set and using Random forest
@@ -36,7 +37,9 @@ from evaluation_ops import *
 #  Created by:
 #      - Kenny Davila (Feb 1, 2012-2014)
 #  Modified By:
-#      - Kenny Davila (Feb 1, 2015)
+#      - Kenny Davila (Feb 1, 2014)
+#      - Kenny Davila (March 11, 2015)
+#        - Incorporated SymbolClassifier class
 #
 #=====================================================================
 
@@ -63,8 +66,8 @@ def predict_in_chunks(data, classifier, max_chunk_size):
 def main():
     #usage check
     if len(sys.argv) < 8:
-        print("Usage: python random_forest_classify.py training_set testing_set N_trees max_D max_feats "
-              "type times [n_jobs]")
+        print("Usage: python random_forest_classify.py training_set testing_set N_trees max_D ")
+        print("       max_feats type times [n_jobs] [out_file]")
         print("Where")
         print("\ttraining_set\t= Path to the file of the training set")
         print("\ttesting_set\t= Path to the file of the testing set")
@@ -76,6 +79,7 @@ def main():
         print("\t\t\t\t1 - Entropy")
         print("\ttimes\t\t= Number of times to repeat experiments")
         print ("\tn_jobs\t\t= Optional, number of parallel threads to use")
+        print ("\tout_file\t= Optional, file where classifier will be stored")
         return
 
     print("Loading data....")
@@ -145,6 +149,12 @@ def main():
             return
     else:
         num_jobs = 1
+
+    if len(sys.argv) >= 10:
+        out_filename = sys.argv[9]
+    else:
+        out_filename = train_filename + ".best.RF"
+
 
     print("....Data loaded!")
 
@@ -240,8 +250,10 @@ def main():
           str(round(all_testing_stds.std(), 3)))
 
     #...Save to file...
-    out_file = open(sys.argv[1] + ".best.RF", 'wb')
-    cPickle.dump(best_forest_ref, out_file, cPickle.HIGHEST_PROTOCOL)
+    classifier = SymbolClassifier(SymbolClassifier.TypeRandomForest, best_forest_ref, classes_l, classes_dict)
+
+    out_file = open(out_filename, 'wb')
+    cPickle.dump(classifier, out_file, cPickle.HIGHEST_PROTOCOL)
     out_file.close()
 
 

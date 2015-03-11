@@ -29,6 +29,7 @@ from sklearn import svm
 from sklearn.preprocessing import StandardScaler
 from dataset_ops import *
 from evaluation_ops import *
+from symbol_classifier import SymbolClassifier
 
 
 def main():
@@ -40,6 +41,7 @@ def main():
         print("\ttesting\t= Path to testing set")
         print("\tevaluate\t= Optional, run evaluation or just training ")
         print("\tprobab\t= Optional, make it a probabilistic classifier")
+        print("\toutput\t= Optional, path to store trained classifier")
         return
 
     print("loading data")
@@ -78,6 +80,11 @@ def main():
     else:
         make_probabilistic = False
 
+    if len(sys.argv) >= 6:
+        out_filename = sys.argv[5]
+    else:
+        out_filename = sys.argv[1] + ".LSVM"
+
     print("Training with: " + sys.argv[1])
     print("Training Samples: " + str(np.size(training, 0)))
     print("Testing with: " + sys.argv[2])
@@ -95,8 +102,10 @@ def main():
     classifier.fit(training, np.ravel(labels_train) )
 
     print("...Saving to file...")
-    out_file = open(sys.argv[1] + ".LSVM", 'wb')
-    cPickle.dump(classifier, out_file, cPickle.HIGHEST_PROTOCOL)
+    symbol_classifier = SymbolClassifier(SymbolClassifier.TypeSVMLIN, classifier, classes_l, classes_dict, scaler,
+                                         make_probabilistic)
+    out_file = open(out_filename, 'wb')
+    cPickle.dump(symbol_classifier, out_file, cPickle.HIGHEST_PROTOCOL)
     out_file.close()
 
     if not evaluate:

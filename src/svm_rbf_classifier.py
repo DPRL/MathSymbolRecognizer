@@ -29,6 +29,7 @@ from sklearn import svm
 from sklearn.preprocessing import StandardScaler
 from dataset_ops import *
 from evaluation_ops import *
+from symbol_classifier import SymbolClassifier
 
 
 def main():
@@ -42,6 +43,7 @@ def main():
         print("\tGamma\t\t= Gamma parameter of the RBF SVM")
         print("\teval\t\t= Optional, will not evaluate if equal to 1")
         print("\tprobab\t\t= Optional, make it a probabilistic classifier")
+        print("\toutput\t= Optional, path to store trained classifier")
         return
 
     print("loading data")
@@ -92,6 +94,11 @@ def main():
     else:
         make_probabilistic = False
 
+    if len(sys.argv) >= 8:
+        out_filename = sys.argv[7]
+    else:
+        out_filename = sys.argv[1] + ".RSVM"
+
     print("Training with: " + sys.argv[1])
     print("Testing with: " + sys.argv[2])
     print("Current C = " + str(rbf_C))
@@ -110,8 +117,10 @@ def main():
 
     #store the classifier...
     print("...Saving to file...")
-    out_file = open(sys.argv[1] + ".RSVM", 'wb')
-    cPickle.dump(classifier, out_file, cPickle.HIGHEST_PROTOCOL)
+    symbol_classifier = SymbolClassifier(SymbolClassifier.TypeSVMRBF, classifier, classes_l, classes_dict, scaler,
+                                         make_probabilistic)
+    out_file = open(out_filename, 'wb')
+    cPickle.dump(symbol_classifier, out_file, cPickle.HIGHEST_PROTOCOL)
     out_file.close()
 
     if not evaluate:
