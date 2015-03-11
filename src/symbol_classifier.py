@@ -13,3 +13,11 @@ class SymbolClassifier:
         self.scaler = scaler
         self.probabilistic = probabilistic
 
+    def predict(self, dataset):
+        return self.trained_classifier.predict(dataset)
+
+    def predict_proba(self, dataset):
+        return self.trained_classifier.predict_proba(dataset)
+
+    def get_raw_classes(self):
+        return self.trained_classifier.classes_

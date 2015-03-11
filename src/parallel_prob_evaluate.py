@@ -30,6 +30,7 @@ import multiprocessing
 from sklearn.preprocessing import StandardScaler
 from dataset_ops import *
 from evaluation_ops import *
+from symbol_classifier import SymbolClassifier
 
 #=====================================================================
 #  this program takes as input a training set, a testing set and a
@@ -42,6 +43,8 @@ from evaluation_ops import *
 #      - Kenny Davila (Feb 12, 2012-2014)
 #      - Kenny Davila (Feb 25, 2012-2014
 #        - Now includes top-5 accuracy too
+#      - Kenny Davila (Mar 11, 2015)
+#        - Symbol classifier class now adopted
 #
 #=====================================================================
 
@@ -55,10 +58,11 @@ def evaluate_data(classifier, data, first, last, top_n, results_queue):
     results = np.zeros((n_samples, top_n))
 
     #find the top N values per sample...
+    raw_classes = classifier.get_raw_classes()
     for i in range(n_samples):
         tempo_values = []
         for k in range(n_classes):
-            tempo_values.append((predicted[i, k], classifier.classes_[k]))
+            tempo_values.append((predicted[i, k], raw_classes[k]))
 
         #now, sort!
         tempo_values = sorted(tempo_values, reverse=True)
@@ -101,14 +105,13 @@ def parallel_evaluate(classifier, dataset, workers, top_n):
 
 
 def main():
-    if len(sys.argv) < 6:
+    if len(sys.argv) < 5:
         print("Usage: python parallel_prob_evaluate.py training_set testing_set classifier normalize " +
               "workers [test_only] [ambiguous]")
         print("Where")
         print("\ttraining_set\t= Path to the file of the training set")
         print("\ttesting_set\t= Path to the file of the testing set")
         print("\tclassifier\t= File that contains the pickled classifier")
-        print("\tnormalized\t= Whether training data was normalized prior training")
         print("\tworkers\t\t= Number of parallel threads to use")
         print("\ttest_only\t= Optional, Only execute for testing set")
         print("\tambiguous\t= Optional, file that contains the list of ambiguous")
@@ -119,13 +122,7 @@ def main():
     classifier_file = sys.argv[3]
 
     try:
-        normalized = int(sys.argv[4]) > 0
-    except:
-        print("Invalid normalized value")
-        return
-
-    try:
-        workers = int(sys.argv[5])
+        workers = int(sys.argv[4])
         if workers < 1:
             print("Invalid number of workers")
             return
@@ -133,35 +130,49 @@ def main():
         print("Invalid number of workers")
         return
 
-    if len(sys.argv) >= 7:
+    if len(sys.argv) >= 6:
         try:
-            test_only = int(sys.argv[6]) > 0
+            test_only = int(sys.argv[5]) > 0
         except:
             print("Invalid value for test_only")
             return
     else:
         test_only = False
 
-    if len(sys.argv) >= 8:
-        allograph_file = sys.argv[7]
+    if len(sys.argv) >= 7:
+        allograph_file = sys.argv[6]
     else:
         allograph_file = None
         ambiguous = None
 
-    print("Loading data...")
+    print("Loading classifier...")
 
-    #...loading traininig data...
-    training, labels_l, att_types = load_dataset(training_file)
+    in_file = open(classifier_file, 'rb')
+    classifier = cPickle.load(in_file)
+    in_file.close()
 
-    if att_types is None:
-        print("Error loading File <" + training_file + ">")
+    if not isinstance(classifier, SymbolClassifier):
+        print("Invalid classifier file!")
         return
 
-    #...generate mapping...
-    classes_dict, classes_l = get_label_mapping(labels_l)
+    print("Loading data...")
+
+    # get mapping
+    classes_dict = classifier.classes_dict
+    classes_l = classifier.classes_list
     n_classes = len(classes_l)
-    #...generate mapped labels...
-    labels_train = get_mapped_labels(labels_l, classes_dict)
+
+    if not test_only:
+        #...loading traininig data...
+        training, labels_l, att_types = load_dataset(training_file)
+        if att_types is None:
+            print("Error loading File <" + training_file + ">")
+            return
+
+        #...generate mapped labels...
+        labels_train = get_mapped_labels(labels_l, classes_dict)
+    else:
+        training, labels_l, labels_train = (None, None, None)
 
     #...loading testing data...
     testing, test_labels_l, att_types = load_dataset(testing_file)
@@ -172,19 +183,14 @@ def main():
 
     labels_test = get_mapped_labels(test_labels_l, classes_dict)
 
-    if normalized:
+    if classifier.scaler is not None:
         print("Normalizing...")
 
-        scaler = StandardScaler()
-        training = scaler.fit_transform(training)
+        scaler = classifier.scaler
+        if not test_only:
+            training = scaler.transform(training)
+
         testing = scaler.transform(testing)
-
-
-    print("Loading classifier...")
-
-    in_file = open(classifier_file, 'rb')
-    classifier = cPickle.load(in_file)
-    in_file.close()
 
     if not allograph_file is None:
         print("Loading ambiguous file...")
@@ -198,21 +204,20 @@ def main():
 
     start_time = time.time()
 
-    n_training_samples = np.size(training, 0)
-    n_testing_samples = np.size(testing, 0)
-
     top_n = 5
 
     if not test_only:
-        #Training data
-        #....first, evaluate samples on multiple threads
+        # Training data
+        n_training_samples = np.size(training, 0)
+
+        # ....first, evaluate samples on multiple threads
         predicted = parallel_evaluate(classifier, training, workers, top_n)
 
         print "Training Samples: " + str(n_training_samples)
         print "Training Results"
         print "Top\tAccuracy\tClass Average\tClass STD "
 
-        #....on main thread, compute final statistics
+        # ....on main thread, compute final statistics
         for i in range(top_n):
             total_correct, counts_per_class, errors_per_class = compute_topn_error_counts(predicted, labels_train,
                                                                                           n_classes, i + 1)
@@ -223,8 +228,10 @@ def main():
     else:
         print("...Skipping Training set...")
 
-    #Testing data
-    #....first, evaluate samples on multiple threads
+    n_testing_samples = np.size(testing, 0)
+
+    # Testing data
+    # ....first, evaluate samples on multiple threads
     predicted = parallel_evaluate(classifier, testing, workers, top_n)
 
     #....on main thread, compute final statistics
