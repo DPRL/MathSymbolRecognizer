@@ -33,7 +33,7 @@ from symbol_classifier import SymbolClassifier
 
 
 def main():
-    #usage check...
+    # usage check...
     if len(sys.argv) < 3:
         print("Usage: python svm_lin_classifier.py training testing [evaluate] [probab]")
         print("Where")
