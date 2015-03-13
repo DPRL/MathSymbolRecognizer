@@ -72,6 +72,9 @@ class SymbolClassifier:
 
         new_symbol = MathSymbol(0, traces, '{Unknown}')
 
+        # normalize size and locations
+        new_symbol.normalize()
+
         return new_symbol
 
     def get_symbol_features(self, symbol):
