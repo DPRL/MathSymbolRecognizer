@@ -1,0 +1,3 @@
+#!/bin/bash
+
+nohup python PenStrokeServer.py 6501 &
