@@ -41,6 +41,8 @@ from load_inkml import *
 #         - Added AUX file to output origin for each sample in DS
 #      - Kenny Davila (Jan 16, 2012-2014)
 #         - Print number of attributes found
+#      - Kenny Davila (March 2016)
+#         - Added additional error handling for files with errors
 #
 #=====================================================================
  
@@ -67,14 +69,21 @@ def main():
     samples = []
     labels_found = {}
     sources = []
+    error_files = []
+    
     #read every file in the path specified...        
     for i in range(len(filtered_list)):
         file_name = filtered_list[i]
         file_path = sys.argv[1] + '//' + file_name;
         advance = float(i) / len(filtered_list)
         print(("Processing => {:.2%} => "  + file_path).format( advance ))
-        
-        symbols = load_inkml( file_path, True )                    
+
+        try:
+            symbols = load_inkml( file_path, True )            
+        except:
+            print("Failed processing: " + file_path)
+            error_files.append(file_path)
+            symbols = []
             
         for new_symbol in symbols:
             #now generate the features and add them to the list, including the tag
@@ -92,7 +101,14 @@ def main():
             #exported as auxiliary file
             sources.append( ( file_path, new_symbol.id) )
 
-            
+
+    print("Total input files: " + str(len(filtered_list)))
+    print("Total valid files: " + str(len(filtered_list) -  len(error_files)))
+    print("Files with errors: ")
+    for filename in error_files:
+        print("\t- " + filename)
+        
+    print("Total files with error: " + str(len(error_files)))
     
     print( "Found: " + str(len(labels_found.keys())) + " different classes" )
     if len(samples) > 0:

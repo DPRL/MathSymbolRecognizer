@@ -19,6 +19,8 @@ import xml.etree.ElementTree as ET
 #      - Kenny Davila (Apr 11, 2014)
 #         - Fixed cases where symbol loaded has no traces
 #         - Added junk symbol compatibility
+#      - Kenny Davila (March, 2016)
+#         - Error handling
 #
 #=====================================================================
 
