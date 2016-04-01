@@ -75,5 +75,8 @@ def main():
         top_5_desc = [class_name + " ({0:.2f}%)".format(prob * 100) for class_name, prob in top_5]
         print("=> Top 5 classes: " + ",".join(top_5_desc))
         print("")
-        
+
     print("Finished")
+
+if __name__ == '__main__':
+    main()
