@@ -30,14 +30,36 @@ from symbol_classifier import SymbolClassifier
 def main():
     # usage check...
     if len(sys.argv) < 3:
-        print("Usage: python test_classifer.py classifier inkml_file")
+        print("Usage: python test_classifer.py classifier inkml_file [save_svg] [svg_path]")
         print("Where")
         print("\tclassifier\t= Path to trained symbol classifier")
         print("\tinkml_file\t= Path to inkml file to load")
+        print("\tsave_svg\t= Optional, save SVG file for each symbol")
+        print("\t\t0 - No (Default)")
+        print("\t\t1 - Save SVG after pre-processing")
+        print("\t\t2 - Save SVG before pre-processing")
+        print("\tsvg_path\t= Optional, path prefix used for saved SVG files")
         return
 
     classifier_file = sys.argv[1]
     inkml_file = sys.argv[2]
+
+    if len(sys.argv) > 4:
+        try:
+            save_sgv = int(sys.argv[3])
+            if save_sgv < 0 or save_sgv > 2:
+                print("Invalid value for save_svg")
+                return
+        except:
+            print("Invalid value for save_svg")
+            return
+    else:
+        save_sgv = 0
+
+    if len(sys.argv) > 5:
+        svg_path = sys.argv[4]
+    else:
+        svg_path = ""
 
     print("Loading classifier")
 
@@ -75,6 +97,13 @@ def main():
         top_5_desc = [class_name + " ({0:.2f}%)".format(prob * 100) for class_name, prob in top_5]
         print("=> Top 5 classes: " + ",".join(top_5_desc))
         print("")
+
+        if save_sgv == 2:
+            symbol.swapPoints()
+
+        if save_sgv >= 1:
+            symbol.saveAsSVG(svg_path + "symbol_" + str(symbol.id) + ".svg")
+
 
     print("Finished")
 
