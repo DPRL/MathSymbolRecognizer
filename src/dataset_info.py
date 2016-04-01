@@ -103,7 +103,7 @@ def main():
     #...second pass... create histogram...
     count_bins = [0 for x in range(n_bins)]
     samples_bins = [0 for x in range(n_bins)]
-    size_per_bin = int(math.ceil(float(largest_class_size) / float(n_bins)))
+    size_per_bin = int(math.ceil(float(largest_class_size + 1) / float(n_bins)))
     for label in count_per_class:
         current_bin = int(count_per_class[label] / size_per_bin)
         count_bins[current_bin] += 1
