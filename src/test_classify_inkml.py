@@ -44,7 +44,7 @@ def main():
     classifier_file = sys.argv[1]
     inkml_file = sys.argv[2]
 
-    if len(sys.argv) > 4:
+    if len(sys.argv) >= 4:
         try:
             save_sgv = int(sys.argv[3])
             if save_sgv < 0 or save_sgv > 2:
@@ -56,7 +56,7 @@ def main():
     else:
         save_sgv = 0
 
-    if len(sys.argv) > 5:
+    if len(sys.argv) >= 5:
         svg_path = sys.argv[4]
     else:
         svg_path = ""
